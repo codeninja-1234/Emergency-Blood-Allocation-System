@@ -19,7 +19,8 @@ AFTER UPDATE ON Allocations
 FOR EACH ROW
 BEGIN
     IF NEW.assigned_status = 'Completed'
-       AND OLD.assigned_status <> 'Completed' THEN
+       AND (OLD.assigned_status IS NULL
+            OR OLD.assigned_status <> 'Completed') THEN
 
         UPDATE Donors
         SET is_available = FALSE
