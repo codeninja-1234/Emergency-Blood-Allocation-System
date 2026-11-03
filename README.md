@@ -94,6 +94,6 @@ The database supports blood-group compatibility matching and donor availability 
 
 ## Team Responsibilities
 
-- Person 1: Database design, SQL implementation, database objects and testing.
-- Person 2: Flask application, frontend/backend development and database integration.
+- SHRUTI CHOUDHARY: Database design, SQL implementation, database objects and testing.
+- SHREYA YASHODHARA SINGH: Flask application, frontend/backend development and database integration.
 
