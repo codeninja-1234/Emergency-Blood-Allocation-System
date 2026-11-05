@@ -1,99 +1,35 @@
 # Emergency Blood & Donor Allocation System
 
-## Project Overview
+Flask backend and browser dashboard for the existing MySQL database `blood_bank_db`.
 
-This project manages emergency blood requests, donor information, blood-group compatibility, donor allocations and notifications. It helps identify available donors compatible with hospital blood requirements.
+## Run
 
-## Database Information
+1. Create/activate a virtual environment and install dependencies: `pip install -r requirements.txt`
+2. Copy `.env.example` to `.env` and set the MySQL password. Export those values in your shell (or load them with your preferred dotenv tool).
+3. Ensure the supplied SQL scripts have been run, including `06_procedures.sql`, then run `07_users.sql`.
+4. Start the app: `python app.py`
+5. Open `http://127.0.0.1:5000`.
 
-- Database: blood_bank_db
-- DBMS: MySQL
-- Core tables: 7
-- Normalization objective: 3NF/BCNF
+Create a password hash for an account:
 
-## Database Tables
+```powershell
+python -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('ChangeMe123!'))"
+```
 
-1. Hospitals – Stores hospital details and location information.
-2. Donors – Stores donor information, blood groups and availability.
-3. Emergency_Requests – Stores hospital blood requests and urgency levels.
-4. Allocations – Records donor assignments against requests.
-5. Blood_Matrix – Stores donor-recipient blood-group compatibility.
-6. Donation_History – Maintains previous donation records.
-7. Notifications – Stores notification details.
+Insert the printed hash into `App_Users`, for example:
 
-## Views
+```sql
+INSERT INTO App_Users (username, password_hash, role) VALUES ('admin', 'PASTE_HASH_HERE', 'Admin');
+```
 
-- View_Available_Donors
-- View_Request_Details
-- View_Allocation_Details
+The compatible-donor endpoint uses the database routine directly: `CALL sp_find_compatible_donors(?)`. Completing an allocation relies on the existing database trigger to mark the donor unavailable and updates the related request status to `Completed`.
 
-## Indexes
+## Routes
 
-- idx_donor_match
-- idx_request_status
-- idx_allocation_request
+- `GET /` dashboard for hospitals, requests, donors, compatible matching, allocations, and status updates
+- `POST /hospitals` and `POST /requests`
+- `GET /api/donors` and `GET /api/requests/<request_id>/compatible-donors`
+- `POST /allocations` and `PATCH /allocations/<allocation_id>`
+- `GET /api/health`
 
-## Triggers
-
-- trg_after_allocation: Creates a notification after a new allocation.
-- trg_donor_unavailable: Marks a donor unavailable when an allocation becomes Completed.
-
-## Stored Procedure
-
-sp_find_compatible_donors(p_request_id)
-
-Finds available donors compatible with the blood group required by an emergency request, ordered by reliability.
-
-Example:
-
-    CALL sp_find_compatible_donors(1);
-
-## SQL Files and Execution Order
-
-1. database/01_schema.sql
-2. database/02_sample_data.sql
-3. database/04_views_indexes.sql
-4. database/05_triggers.sql
-5. database/06_procedures.sql
-6. database/07_hardening.sql
-
-Use database/03_queries.sql to test the SQL queries.
-
-The files 04_database_objects.sql and 05_sample_data_backup.sql are backup files and are not part of the normal installation sequence.
-
-Run 07_hardening.sql only once because it adds named constraints.
-
-## Sample Data
-
-| Table | Records |
-|---|---:|
-| Hospitals | 3 |
-| Donors | 10 |
-| Emergency_Requests | 4 |
-| Allocations | 4 |
-| Blood_Matrix | 64 |
-| Donation_History | 4 |
-| Notifications | 4 |
-
-## Testing
-
-The database has been tested for:
-
-- Table creation and relationships
-- Sample data insertion
-- Blood-group compatibility
-- SQL queries and joins
-- Views and indexes
-- Trigger execution
-- Stored procedure execution
-- Constraints and transaction rollback
-
-## Project Scope
-
-The database supports blood-group compatibility matching and donor availability tracking. It does not replace medical screening, clinical eligibility checks or crossmatching.
-
-## Team Responsibilities
-
-- SHRUTI CHOUDHARY: Database design, SQL implementation, database objects and testing.
-- SHREYA YASHODHARA SINGH: Flask application, frontend/backend development and database integration.
-
+This is an academic demonstration and does not replace clinical eligibility or medical approval.
